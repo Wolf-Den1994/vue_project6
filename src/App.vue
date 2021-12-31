@@ -8,7 +8,11 @@
       </div>
       <button class="btn primary" :disabled="!name.length">Создать человека</button>
     </form>
-    <app-people-list :people="people" @load="loadPeople"></app-people-list>
+    <app-people-list
+      :people="people"
+      @load="loadPeople"
+      @remove="removePerson"
+    ></app-people-list>
   </div>
 </template>
 
@@ -54,6 +58,10 @@ export default {
           ...data[key]
         }
       })
+    },
+    async removePerson(id) {
+      await axios.delete(`https://vue-with-http-d3b6e-default-rtdb.firebaseio.com/people/${id}.json`)
+      this.people = this.people.filter(person => person.id !== id)
     }
   },
   components: {
