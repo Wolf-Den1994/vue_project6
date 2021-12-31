@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <app-alert :alert="alert" @close="alert = null"></app-alert>
     <form class="card" @submit.prevent="createPerson">
       <h2>Работа с базой данных</h2>
       <div class="form-control">
@@ -18,12 +19,14 @@
 
 <script>
 import AppPeopleList from "./AppPeopleList";
+import AppAlert from "./AppAlert";
 import axios from 'axios'
 export default {
   data() {
     return {
       name: '',
-      people: []
+      people: [],
+      alert: null
     }
   },
   mounted() {
@@ -50,14 +53,26 @@ export default {
       this.name = ''
     },
     async loadPeople() {
-      const { data } = await axios.get('https://vue-with-http-d3b6e-default-rtdb.firebaseio.com/people.json')
-      this.people = Object.keys(data).map((key) => {
-        return {
-          id: key,
-          // firstName: data[key].firstName
-          ...data[key]
+      try {
+        const { data } = await axios.get('https://vue-with-http-d3b6e-default-rtdb.firebaseio.com/people.json')
+        if (!data) {
+          throw new Error('Список людей пуст')
         }
-      })
+        this.people = Object.keys(data).map((key) => {
+          return {
+            id: key,
+            // firstName: data[key].firstName
+            ...data[key]
+          }
+        })
+      } catch (e) {
+        this.alert = {
+          type: 'danger',
+          title: 'Ошибка!',
+          text: e.message
+        }
+        console.error(e.message)
+      }
     },
     async removePerson(id) {
       await axios.delete(`https://vue-with-http-d3b6e-default-rtdb.firebaseio.com/people/${id}.json`)
@@ -65,7 +80,8 @@ export default {
     }
   },
   components: {
-    AppPeopleList
+    AppPeopleList,
+    AppAlert
   }
 }
 </script>
