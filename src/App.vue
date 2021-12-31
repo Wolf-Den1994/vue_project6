@@ -75,8 +75,19 @@ export default {
       }
     },
     async removePerson(id) {
-      await axios.delete(`https://vue-with-http-d3b6e-default-rtdb.firebaseio.com/people/${id}.json`)
-      this.people = this.people.filter(person => person.id !== id)
+      try {
+        const personName = this.people.find((person) => person.id === id).firstName
+        console.log(personName)
+        await axios.delete(`https://vue-with-http-d3b6e-default-rtdb.firebaseio.com/people/${id}.json`)
+        this.people = this.people.filter(person => person.id !== id)
+        this.alert = {
+          type: 'primary',
+          title: 'Успешно!',
+          text: `Пользователь c именем ${personName} был удален`
+        }
+      } catch (e) {
+        console.log(e.message)
+      }
     }
   },
   components: {
