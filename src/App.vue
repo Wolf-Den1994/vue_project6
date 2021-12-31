@@ -9,7 +9,11 @@
       </div>
       <button class="btn primary" :disabled="!name.length">Создать человека</button>
     </form>
+
+    <app-loader v-if="loading"></app-loader>
+
     <app-people-list
+      v-else
       :people="people"
       @load="loadPeople"
       @remove="removePerson"
@@ -20,13 +24,15 @@
 <script>
 import AppPeopleList from "./AppPeopleList";
 import AppAlert from "./AppAlert";
+import AppLoader from './AppLoader';
 import axios from 'axios'
 export default {
   data() {
     return {
       name: '',
       people: [],
-      alert: null
+      alert: null,
+      loading: false
     }
   },
   mounted() {
@@ -54,6 +60,7 @@ export default {
     },
     async loadPeople() {
       try {
+        this.loading = true
         const { data } = await axios.get('https://vue-with-http-d3b6e-default-rtdb.firebaseio.com/people.json')
         if (!data) {
           throw new Error('Список людей пуст')
@@ -65,12 +72,14 @@ export default {
             ...data[key]
           }
         })
+        this.loading = false
       } catch (e) {
         this.alert = {
           type: 'danger',
           title: 'Ошибка!',
           text: e.message
         }
+        this.loading = false
         console.error(e.message)
       }
     },
@@ -86,13 +95,19 @@ export default {
           text: `Пользователь c именем ${personName} был удален`
         }
       } catch (e) {
-        console.log(e.message)
+        this.alert = {
+          type: 'danger',
+          title: 'Ошибка!',
+          text: e.message
+        }
+        console.error(e.message)
       }
     }
   },
   components: {
     AppPeopleList,
-    AppAlert
+    AppAlert,
+    AppLoader
   }
 }
 </script>
